@@ -22,7 +22,9 @@ public class Fish extends Thread{
 		while(life > 0) {
 			int next_x = new Random().nextInt(600)+30;
 			int next_y = new Random().nextInt(350)+30;
-
+			
+			//동기화 블록
+			synchronized (this) {
 			while(!(x == next_x && y == next_y)) {
 				if (x > next_x) x -= 1;
 				else if (x < next_x) x += 1;
@@ -51,12 +53,12 @@ public class Fish extends Thread{
 			x = -50; y = -50;
 			app.repaint();
 			AquaPanel.f_size--;
-		}
+			}
 	
+		}
 	}
-
-	public void Life() {
-		this.life = 10;
-	}
+		public synchronized void Life() {
+		    this.life = 10;
+		}
 	
 }

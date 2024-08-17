@@ -39,7 +39,8 @@ public class Enemy extends Thread
 			dir = ran.nextInt(4)+1; // 초기값 난수 설정 추가
 			life = (int)(Math.random() * 5) + 1; // 상어의 목숨이 생겨난다
 			
-			//목숨이 있는동안 상어가 움직임을 시작
+			//동기화코드
+			synchronized (this) {
 			while(life>0)
 			{
 				// 물고기의 개수가 줄어드는 코드를 이곳에 추가
@@ -104,8 +105,12 @@ public class Enemy extends Thread
 				catch(InterruptedException e) 
 				{
 					e.printStackTrace();
+					}
 				}
 			}
 		}
 	}
+	public synchronized void Life() {  // 동기화 메서드
+        this.life = 10;
+    }
 }
