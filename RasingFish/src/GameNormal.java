@@ -30,7 +30,7 @@ public class GameNormal extends JFrame implements Runnable
 	public static boolean Over = false;
 	public static boolean Clear = false;
 
-	
+	private int fishAppearance;
 
 	public GameNormal(String msg)
 	{	
