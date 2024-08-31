@@ -38,39 +38,67 @@ public class AquaPanel extends JPanel {
         fish = new Fish[initial_fish_count]; // 초기 물고기 수로 배열 크기 설정
         log("Initial number of fish: " + initial_fish_count);  // 로그 추가: 초기 물고기 수
 
-        synchronized (this) {  // 동기화 추가
-            for (i = 0; i < initial_fish_count; i++) {  // 배열 크기를 기준으로 반복
-                fish[i] = new Fish(this, (int)(Math.random() * 500) + 1, (int)(Math.random() * 500) + 1);
+        synchronized (this) { 
+            for (i = 0; i < initial_fish_count; i++) {  
+                fish[i] = new Fish(this, (int)(Math.random() * 500) + 1, (int)(Math.random() * 500) + 1, this); // 인스턴스 전달
                 fish[i].start();
                 incrementFishCount();
             }
         }
 
-        addMouseListener(new MouseAdapter() {  // 물고기 클릭 이벤트 처리
+//        addMouseListener(new MouseAdapter() {  // 물고기 클릭 이벤트 처리
+//            public void mousePressed(MouseEvent e) {
+//                click_x = e.getX();
+//                click_y = e.getY();
+//
+//                synchronized (AquaPanel.this) {  // 동기화 추가
+//                    for (int i = 0; i < initial_fish_count; i++) {  // 배열 크기를 기준으로 반복
+//                        if (fish[i].life > 0 && fish[i].x < click_x && click_x < fish[i].x + 100 && fish[i].y < click_y && click_y < fish[i].y + 100) {
+//                            fish[i].Life();
+//                            log("Fish " + i + " life reset to 10");  // 로그 추가: 물고기 피 회복
+//                            effect = true;
+//                            log("Effect set to true");  // 로그 추가: effect 상태 변경
+//                        }
+//                    }
+//                }
+//                repaint(); // 리스너에서만 repaint 호출
+//            }
+//
+//            public void mouseReleased(MouseEvent e) {
+//                effect = false;
+//                log("Effect set to false");  // 로그 추가: effect 상태 변경
+//                repaint();
+//            }
+//        });
+        
+        //repaint() 호출 최소화하는 방식으로 코드 개선
+        addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 click_x = e.getX();
                 click_y = e.getY();
 
-                synchronized (AquaPanel.this) {  // 동기화 추가
-                    for (int i = 0; i < initial_fish_count; i++) {  // 배열 크기를 기준으로 반복
+                boolean fishClicked = false;
+                synchronized (AquaPanel.this) {
+                    for (int i = 0; i < initial_fish_count; i++) {
                         if (fish[i].life > 0 && fish[i].x < click_x && click_x < fish[i].x + 100 && fish[i].y < click_y && click_y < fish[i].y + 100) {
                             fish[i].Life();
-                            log("Fish " + i + " life reset to 10");  // 로그 추가: 물고기 피 회복
                             effect = true;
-                            log("Effect set to true");  // 로그 추가: effect 상태 변경
+                            fishClicked = true;
                         }
                     }
                 }
-                repaint(); // 리스너에서만 repaint 호출
+
+                if (fishClicked) {
+                    repaint();
+                }
             }
 
             public void mouseReleased(MouseEvent e) {
                 effect = false;
-                log("Effect set to false");  // 로그 추가: effect 상태 변경
                 repaint();
             }
         });
-
+        
         addMouseMotionListener(new MouseMotionAdapter() {  // 마우스 움직임 감지 리스너
             public void mouseMoved(MouseEvent e) {
                 click_x = e.getX();
@@ -110,10 +138,10 @@ public class AquaPanel extends JPanel {
             }
         });
 
+     // Enemy 객체 생성 시 AquaPanel 인스턴스를 전달
         int start_x = (int)(Math.random() * 700) + 1;
         int start_y = (int)(Math.random() * 500) + 1;
-
-        enm = new Enemy(this, start_x, start_y);
+        enm = new Enemy(this, start_x, start_y, this);
         enm.start();
 
         setVisible(true);
@@ -165,6 +193,7 @@ public class AquaPanel extends JPanel {
         if (getFishCount() <= 0) { 
             over = new ImageIcon("gameover.png");
             g.drawImage(over.getImage(), 80, 100, null);
+            enm.gameOver(); //게임 오버일 경우 상어가 나타나지 않게 처리.
         } else {
             if (GameEasy.Over) {
                 over = new ImageIcon("over.png");
@@ -205,6 +234,7 @@ public class AquaPanel extends JPanel {
         if (f_size < 15) {
             f_size++;
             log("Fish count incremented, new count: " + f_size);
+            SwingUtilities.invokeLater(() -> repaint());
         }
     }
 
@@ -212,6 +242,7 @@ public class AquaPanel extends JPanel {
         if (f_size > 0) {
             f_size--;
             log("Fish count decremented, new count: " + f_size);
+            SwingUtilities.invokeLater(() -> repaint());
         }
     }
 

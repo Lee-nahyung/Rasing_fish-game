@@ -1,4 +1,3 @@
-
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Date;
@@ -9,11 +8,13 @@ public class Fish extends Thread {
     int y;
     JPanel app;
     int life;
+    AquaPanel aquaPanel;  // AquaPanel 인스턴스 참조
 
-    public Fish(JPanel _app, int x, int y) {
+    public Fish(JPanel _app, int x, int y, AquaPanel aquaPanel) {
         app = _app;
         this.x = x;
-        this.y = y;		
+        this.y = y;
+        this.aquaPanel = aquaPanel;  // 인스턴스 초기화
         life = 10;
     }
 
@@ -54,12 +55,21 @@ public class Fish extends Thread {
         x = -50;
         y = -50;
         synchronized (AquaPanel.class) {
-            AquaPanel.f_size--;
+            aquaPanel.decrementFishCount();  // AquaPanel 인스턴스를 통해 호출
         }
-        app.repaint();
+        SwingUtilities.invokeLater(() -> app.repaint());  // UI 업데이트
     }
 
     public synchronized void Life() {
         this.life = 10;
+    }
+
+    public synchronized void decreaseLife() {
+        if (life > 0) {
+            life--;
+            if (life <= 0) {
+                removeFish();
+            }
+        }
     }
 }
